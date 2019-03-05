@@ -17,17 +17,11 @@ body, html {
 
 
 /* Create a Parallax Effect */
-.bgimg-1, .bgimg-2, .bgimg-3 {
+.bgimg-2, .bgimg-3 {
     background-attachment: fixed;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-}
-
-/* First image (Logo. Full height) */
-.bgimg-1 {
-    background-image: url('images/computer_vision.jpg');
-    min-height: 50%;
 }
 
 /* Second image (Portfolio) */
@@ -47,7 +41,7 @@ body, html {
 
 /* Turn off parallax scrolling for tablets and phones */
 @media only screen and (max-device-width: 1024px) {
-    .bgimg-1, .bgimg-2, .bgimg-3 {
+    .bgimg-2, .bgimg-3 {
         background-attachment: scroll;
     }
 }
@@ -78,14 +72,7 @@ body, html {
   </div>
 </div>
 
-<!-- First Parallax Image with Logo Text -->
-<div class="bgimg-1 w3-display-container w3-opacity-min" id="home">
-  <div class="w3-display-middle" style="white-space:nowrap;">
-    <span class="w3-center w3-padding-large w3-black w3-xlarge w3-wide w3-animate-opacity">
-      <span class="w3-hide-small"></span> GeoZIL <span class="w3-hide-small"></span>
-    </span>
-  </div>
-</div>
+
 
 <!-- Container (GEOZIL Section) -->
 <div class="w3-content w3-container w3-padding-64" id="map">
