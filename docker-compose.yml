@@ -1,93 +1,21 @@
----
-version: '3.6'
+# ./docker-compose.yml
+
+version: '3'
+
 services:
-  # The environment variable "TAG" is used throughout this file to
-  # specify the version of the images to run. The default is set in the
-  # '.env' file in this folder. It can be overridden with any normal
-  # technique for setting environment variables, for example:
-  #
-  #   TAG=6.0.0-beta1 docker-compose up
-  #
-  # REF: https://docs.docker.com/compose/compose-file/#variable-substitution
-  #
-  # Also be sure to set the ELASTIC_VERSION variable. For released versions,
-  # ${TAG} and ${ELASTIC_VERSION} will be identical, but for pre-release
-  # versions, ${TAG} might contain an extra build identifier, like
-  # "6.0.0-beta1-3eab5b40", so a full invocation might look like:
-  #
-  #   ELASTIC_VERSION=6.0.0-beta1 TAG=6.0.0-beta1-3eab5b40 docker-compose up
-  #
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${TAG}
-    container_name: elasticsearch
-    secrets:
-      - source: ca.crt
-        target: /usr/share/elasticsearch/config/certs/ca/ca.crt
-      - source: elasticsearch.yml
-        target: /usr/share/elasticsearch/config/elasticsearch.yml
-      - source: elasticsearch.keystore
-        target: /usr/share/elasticsearch/config/elasticsearch.keystore
-      - source: elasticsearch.key
-        target: /usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.key
-      - source: elasticsearch.crt
-        target: /usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.crt
-    ports: ['9200:9200']
-    networks: ['stack']
-    volumes:
-      - 'es_data:/usr/share/elasticsearch/data'
-      - './scripts/setup-users.sh:/usr/local/bin/setup-users.sh:ro'
-    healthcheck:
-      test: curl --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt -s https://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.6.0
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
   kibana:
-    image: docker.elastic.co/kibana/kibana:${TAG}
-    container_name: kibana
-    secrets:
-      - source: kibana.yml
-        target: /usr/share/kibana/config/kibana.yml
-      - source: kibana.keystore
-        target: /usr/share/kibana/data/kibana.keystore
-      - source: ca.crt
-        target: /usr/share/kibana/config/certs/ca/ca.crt
-      - source: kibana.key
-        target: /usr/share/kibana/config/certs/kibana/kibana.key
-      - source: kibana.crt
-        target: /usr/share/kibana/config/certs/kibana/kibana.crt
-    ports: ['56:5601']
-    networks: ['stack']
-    depends_on: ['elasticsearch']
-    healthcheck:
-      test: curl --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt -s https://localhost:5601 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
-networks: {stack: {}}
-# use docker volume to persist ES data outside of a container.
-volumes:
-  es_data:
-
-secrets:
-  ca.crt:
-    file: ./config/ssl/ca/ca.crt
-  elasticsearch.yml:
-    file: ./config/elasticsearch/elasticsearch.yml
-  elasticsearch.keystore:
-    file: ./config/elasticsearch/elasticsearch.keystore
-  elasticsearch.key:
-    file: ./config/elasticsearch/elasticsearch.key
-  elasticsearch.crt:
-    file: ./config/elasticsearch/elasticsearch.crt
-  elasticsearch.p12:
-    file: ./config/elasticsearch/elasticsearch.p12
-  kibana.yml:
-    file: ./config/kibana/kibana.yml
-  kibana.keystore:
-    file: ./config/kibana/kibana.keystore
-  kibana.key:
-    file: ./config/kibana/kibana.key
-  kibana.crt:
-    file: ./config/kibana/kibana.crt
+    image: docker.elastic.co/kibana/kibana:6.6.0
+    ports:
+      - "5601:5601"
