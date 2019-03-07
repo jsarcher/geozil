@@ -65,88 +65,6 @@ services:
       timeout: 10s
       retries: 5
 
-  logstash:
-    image: docker.elastic.co/logstash/logstash:${TAG}
-    container_name: logstash
-    secrets:
-      - source: logstash.conf
-        target: /usr/share/logstash/pipeline/logstash.conf
-      - source: logstash.yml
-        target: /usr/share/logstash/config/logstash.yml
-      - source: logstash.keystore
-        target: /usr/share/logstash/config/logstash.keystore
-      - source: ca.crt
-        target: /usr/share/logstash/config/certs/ca/ca.crt
-    networks: ['stack']
-    depends_on: ['elasticsearch']
-    healthcheck:
-      test: bin/logstash -t
-      interval: 60s
-      timeout: 50s
-      retries: 5
-
-  metricbeat:
-    image: docker.elastic.co/beats/metricbeat:${TAG}
-    container_name: metricbeat
-    # The commented sections below enable Metricbeat to monitor the Docker host,
-    # rather than the Metricbeat container. It's problematic with Docker for
-    # Windows, however, since "/proc", "/sys" etc. don't exist on Windows.
-    # The same likely applies to OSX (needs testing).
-    # volumes:
-    #   - /proc:/hostfs/proc:ro
-    #   - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
-    #   - /:/hostfs:ro
-    command: --strict.perms=false -e  # -e flag to log to stderr and disable syslog/file output
-    secrets:
-      - source: metricbeat.yml
-        target: /usr/share/metricbeat/metricbeat.yml
-      - source: metricbeat.keystore
-        target: /usr/share/metricbeat/metricbeat.keystore
-      - source: ca.crt
-        target: /usr/share/metricbeat/certs/ca/ca.crt
-    volumes:
-      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
-    networks: ['stack']
-    depends_on: ['elasticsearch', 'kibana']
-    healthcheck:
-      test: metricbeat test config
-      interval: 30s
-      timeout: 15s
-      retries: 5
-
-  packetbeat:
-    image: docker.elastic.co/beats/packetbeat:${TAG}
-    container_name: packetbeat
-    # Packetbeat needs some elevated privileges to capture network traffic.
-    # We'll grant them with POSIX capabilities.
-    cap_add: ['NET_RAW', 'NET_ADMIN']
-    # Use "host mode" networking to allow Packetbeat to capture traffic from
-    # the real network interface on the host, rather than being isolated to the
-    # container's virtual interface.
-    network_mode: host
-    # Since we did that, Packetbeat is not part of the "stack" Docker network
-    # that the other containers are connected to, and thus can't resolve the
-    # hostname "elasticsearch". Instead, we'll tell it to find Elasticsearch
-    # on "localhost", which is the Docker host machine in this context.
-    command: -e -E 'output.elasticsearch.hosts=["localhost:9200"]'
-    depends_on: ['elasticsearch']
-    command: --strict.perms=false -e -E output.elasticsearch.hosts="https://localhost:9200" # -e flag to log to stderr and disable syslog/file output
-    secrets:
-      - source: packetbeat.yml
-        target: /usr/share/packetbeat/packetbeat.yml
-      - source: packetbeat.keystore
-        target: /usr/share/packetbeat/packetbeat.keystore
-      - source: ca.crt
-        target: /usr/share/packetbeat/certs/ca/ca.crt
-    volumes:
-      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
-    depends_on: ['elasticsearch', 'kibana']
-    healthcheck:
-      test: packetbeat test config
-      interval: 30s
-      timeout: 15s
-      retries: 5
-
 networks: {stack: {}}
 # use docker volume to persist ES data outside of a container.
 volumes:
@@ -155,12 +73,6 @@ volumes:
 secrets:
   ca.crt:
     file: ./config/ssl/ca/ca.crt
-  logstash.yml:
-    file: ./config/logstash/logstash.yml
-  logstash.keystore:
-    file: ./config/logstash/logstash.keystore
-  logstash.conf:
-    file: ./config/logstash/pipeline/logstash.conf
   elasticsearch.yml:
     file: ./config/elasticsearch/elasticsearch.yml
   elasticsearch.keystore:
@@ -179,11 +91,3 @@ secrets:
     file: ./config/kibana/kibana.key
   kibana.crt:
     file: ./config/kibana/kibana.crt
-  metricbeat.yml:
-    file: ./config/metricbeat/metricbeat.yml
-  metricbeat.keystore:
-    file: ./config/metricbeat/metricbeat.keystore
-  packetbeat.yml:
-    file: ./config/packetbeat/packetbeat.yml
-  packetbeat.keystore:
-    file: ./config/packetbeat/packetbeat.keystore
