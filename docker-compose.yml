@@ -56,7 +56,7 @@ services:
         target: /usr/share/kibana/config/certs/kibana/kibana.key
       - source: kibana.crt
         target: /usr/share/kibana/config/certs/kibana/kibana.crt
-    ports: ['5601:5601']
+    ports: ['56:5601']
     networks: ['stack']
     depends_on: ['elasticsearch']
     healthcheck:
