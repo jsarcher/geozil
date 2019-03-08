@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-# Usage: tail -F -n +0 zilliqa/zilliqa-00001-log.txt | ./acquire_ips.py
+# Usage: tail -F -n +0 ../zilliqa/zilliqa-00001-log.txt | ./ingest.py
 
 import sys
 import select
@@ -13,6 +13,9 @@ import geoip2.database
 # Import requests library 
 import requests 
 
+# Import constants
+import const_pkg
+
 headers = {
     'Content-Type': 'application/json',
 }
@@ -20,7 +23,44 @@ headers = {
 DS_KEYS = ['[LogReceivedDSBlockDe] [  ', '[ProcessSetDSInfoFrom] [']
 EPOCH_KEYS = ['[ProcessSetDSInfoFrom] [Epoch ']
 
-geoip_reader = geoip2.database.Reader('./geoip2_db/GeoLite2-City_20190305/GeoLite2-City.mmdb')
+# Create index 
+
+geoip_reader = geoip2.database.Reader('../geoip2_db/GeoLite2-City_20190305/GeoLite2-City.mmdb')
+
+data = '\n{\n' \
+       '  "mappings": {\n' \
+       '    "_doc": {\n' \
+       '      "properties": {\n' \
+       '        "node_type": { "type": "text" },\n' \
+       '        "ip":        { "type": "text" },\n' \
+       '        "epoch":     { "type": "integer" },\n' \
+       '        "location":  { "type": "geo_point" },\n' \
+       '        "log_time": { \n' \
+       '          "type": "date",\n' \
+       '          "format": "strict_date_hour_minute_second"\n' \
+       '        }\n' \
+       '      }\n' \
+       '    }\n' \
+       '  }\n' \
+       '}'
+
+response = requests.put('https://localhost:9200/geozil', headers=headers, data=data, \
+                        auth=('elastic', const_pkg.ELASTIC_PASSWORD), \
+                        verify='../es/config/ssl/ca/ca.crt')
+print(response)
+
+#data = '{"title" : "geozil*",  "timeFieldName": "log_time"}'
+
+#response = requests.put('http://localhost:9200/.kibana/index-pattern/geozil*', headers=headers, data=data, \
+#                        auth=('elastic', const_pkg.ELASTIC_PASSWORD), \
+#                        verify='../es/config/ssl/ca/ca.crt')
+#print(response)
+
+#data = '{"defaultIndex" : "my_index*"}'
+
+#response = requests.put('http://localhost:9200/.kibana/config/6.6.0', data=data, \
+#                        auth=('elastic', const_pkg.ELASTIC_PASSWORD), \
+#                        verify='../es/config/ssl/ca/ca.crt')
 
 
 line = sys.stdin.readline()
@@ -54,12 +94,11 @@ while line:
                                     hashlib.new('md5', data.encode('utf-8')).hexdigest(), \
                                     headers=headers, \
                                     data=data, \
-                                    auth=('elastic', 'SdUeTeVpGZYvZDcEachvUQ=='), \
-                                    verify='./es/config/ssl/ca/ca.crt')
+                                    auth=('elastic', const_pkg.ELASTIC_PASSWORD), \
+                                    verify='../es/config/ssl/ca/ca.crt')
             print(response)
         except:
-            print(line)
-            print(response)
+            print('No IP found in matched line\n')
             
     line = sys.stdin.readline()
 
