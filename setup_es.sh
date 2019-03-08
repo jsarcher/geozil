@@ -67,6 +67,10 @@ sudo docker-compose up -d
 
 cd ..
 
+######################
+# Setup Zilliqa Node #
+######################
+
 mkdir zilliqa && cd zilliqa
 
 wget https://mainnet-join.zilliqa.com/configuration.tar.gz
