@@ -2,16 +2,17 @@
 
 cd es
 
-docker-compose stop
+sudo docker-compose stop
 
 cd ..
 
-docker stop zilliqa
+sudo docker stop zilliqa
 
-docker system prune
+sudo docker system prune
 
-rm -rf es/
+sudo rm -rf es/
 
 rm -rf zilliqa/
 
+rm -rf geoip2_db/
 

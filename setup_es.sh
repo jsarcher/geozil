@@ -1,44 +1,69 @@
 #! /bin/bash
 
-apt-get update
-apt-get install docker docker-compose python3 python3-pip htop emacs
+#######################
+# Setup GeoZIL Server #
+#######################
 
-pip3 install --upgrade pip
+#####################
+# Setup Host System #
+#####################
 
-pip3 install docker-compose
+# Note: A fresh Ubuntu Server 16.04 is considered
+ 
+# Export LC_ALL for pip install
+export LC_ALL=C
 
-sysctl -w vm.max_map_count=262144
+# Install Docker dependencies
+
+sudo apt-get update
+sudo apt-get install docker docker-compose python3 python3-pip htop emacs
+
+sudo -H pip3 install --upgrade pip
+
+sudo -H pip3 install docker-compose
 
 
-# Download GeoIP2 Database
+# Set vm.max_map_count for Elasticsearch
 
-mkdir geoip2_db && cd geoip2_db
+sudo sysctl -w vm.max_map_count=262144
+
+#########################
+# Setup GeoIP2 Database #
+#########################
+
+mkdir geoip2_db 
+
+cd geoip2_db
 
 wget https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz
 
 tar zxvf GeoLite2-City.tar.gz
 
-pip3 install geoip2
+sudo -H pip3 install geoip2
 
 cd ..
 
-exit
 
-mkdir es
+#######################
+# Setup Elastic Stack #
+#######################
+
 
 git clone https://github.com/elastic/stack-docker.git es
 
 cd es
 
-export LOGSTASH_KEYSTORE_PASS=pwgeheim
+# Add PWD variable to .env file
+printf "PWD=%s\n" $PWD >> .env
+printf "LOGSTASH_KEYSTORE_PASS=pwgeheim\n" >> .env
 
-docker-compose -f setup.yml up
+sudo -H docker-compose -f setup.yml up
 
-docker-compose up -d
+sudo docker-compose up -d
 
-docker-compose -f docker-compose.yml -f docker-compose.setup.yml down --remove-orphans
+sudo docker-compose -f docker-compose.yml -f docker-compose.setup.yml down --remove-orphans
 
-docker-compose up -d
+sudo docker-compose up -d
 
 cd ..
 
