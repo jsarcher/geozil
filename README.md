@@ -1,4 +1,27 @@
 
+
+## Minimum Hardware Requirements
+
+Instace Type: AWS EC2 t2.large
+vCPUs: 2
+Memory (GiB): 8
+SSD Storage: 30 GB
+
+## Network Environment
+
+Typ               Protocl  Port    Source
+
+HTTP              TCP      80      0.0.0.0/0 
+HTTP              TCP      80      ::/0 
+Custom TCP Rule   TCP      5602    84.132.115.160/32 
+Custom TCP Rule   TCP      33133   0.0.0.0/0 
+Custom TCP Rule   TCP      33133   ::/0 
+SSH               TCP      22      84.132.115.160/32 
+Custom UDP Rule   UDP      33133   0.0.0.0/0 
+Custom UDP Rule   UDP      33133   ::/0 
+Custom TCP Rule   TCP      5601    84.132.115.160/32
+
+
 ## Prerequisites
 - Docker and Docker Compose.
 
