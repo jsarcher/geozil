@@ -31,7 +31,7 @@ data = '\n{\n' \
        '  "mappings": {\n' \
        '    "_doc": {\n' \
        '      "properties": {\n' \
-       '        "node_type": { "type": "text" },\n' \
+       '        "node_type": { "type": "keyword" },\n' \
        '        "ip":        { "type": "text" },\n' \
        '        "epoch":     { "type": "integer" },\n' \
        '        "location":  { "type": "geo_point" },\n' \
@@ -44,9 +44,10 @@ data = '\n{\n' \
        '  }\n' \
        '}'
 
-response = requests.put('https://localhost:9200/geozil', headers=headers, data=data, \
+response = requests.put('https://localhost:9200/my_index', headers=headers, data=data, \
                         auth=('elastic', const_pkg.ELASTIC_PASSWORD), \
                         verify='../es/config/ssl/ca/ca.crt')
+
 print(response)
 
 #data = '{"title" : "geozil*",  "timeFieldName": "log_time"}'

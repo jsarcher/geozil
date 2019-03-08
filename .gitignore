@@ -3,3 +3,4 @@ es
 zilliqa
 test.sh
 ingest/const_pkg.py
+ingest/__pycache__/

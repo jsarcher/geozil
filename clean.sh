@@ -1,5 +1,7 @@
 #! /bin/sh
 
+sudo docker-compose stop
+
 cd es && sudo docker-compose stop && cd ..
 
 sudo docker stop zilliqa
